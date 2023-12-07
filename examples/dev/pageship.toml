@@ -11,6 +11,7 @@ name = "dev"
 
 [[app.domains]]
 domain="example.com:8001"
+domainVerification = true
 site="dev"
 
 [site]
