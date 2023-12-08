@@ -64,6 +64,7 @@ func init() {
 
 	startCmd.PersistentFlags().String("cleanup-expired-crontab", "", "cleanup expired schedule")
 	startCmd.PersistentFlags().Duration("keep-after-expired", time.Hour*24, "keep-after-expired")
+	startCmd.PersistentFlags().String("verify-domain-ownership-crontab", "", "verify domain ownership schedule")
 
 	startCmd.PersistentFlags().Bool("controller", true, "run controller server")
 	startCmd.PersistentFlags().Bool("cron", true, "run cron jobs")
@@ -109,8 +110,9 @@ type StartControllerConfig struct {
 }
 
 type StartCronConfig struct {
-	CleanupExpiredCrontab string        `mapstructure:"cleanup-expired-crontab" validate:"omitempty,cron"`
-	KeepAfterExpired      time.Duration `mapstructure:"keep-after-expired" validate:"min=0"`
+	CleanupExpiredCrontab        string        `mapstructure:"cleanup-expired-crontab" validate:"omitempty,cron"`
+	KeepAfterExpired             time.Duration `mapstructure:"keep-after-expired" validate:"min=0"`
+	VerifyDomainOwnershipCrontab string        `mapstructure:"verify-domain-ownership-crontab" validate:"omitempty,cron"`
 }
 
 type setup struct {
@@ -252,6 +254,12 @@ func (s *setup) cron(conf StartCronConfig) error {
 				Schedule:         conf.CleanupExpiredCrontab,
 				KeepAfterExpired: conf.KeepAfterExpired,
 				DB:               s.database,
+			},
+			&cron.VerifyDomainOwnership{
+				Schedule:                     conf.VerifyDomainOwnershipCrontab,
+				DB:                           s.database,
+				MaxConsumeActiveDomainCount:  10,
+				MaxConsumePendingDomainCount: 10,
 			},
 		},
 	}
