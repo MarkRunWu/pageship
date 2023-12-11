@@ -94,6 +94,9 @@ func (c *Controller) handleDomainCreate(w http.ResponseWriter, r *http.Request) 
 		if !ok {
 			return nil, models.ErrUndefinedDomain
 		}
+		if config.DomainVerification {
+			return nil, models.ErrDomainVerificationNotSupported
+		}
 
 		domain, err := tx.GetDomainByName(r.Context(), domainName)
 		if errors.Is(err, models.ErrDomainNotFound) {
