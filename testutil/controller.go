@@ -52,7 +52,9 @@ func (c *TestController) NewApp(name string, user *models.User, config *config.A
 		now := time.Now()
 		context := c.Context
 		app := models.NewApp(now, name, user.ID)
-		app.Config = config
+		if config != nil {
+			app.Config = config
+		}
 		return tx.CreateApp(context, app)
 	})
 	return name
@@ -82,15 +84,16 @@ func WithTestController(f func(*TestController)) {
 	}
 	logger, _ := zap.NewDevelopmentConfig().Build()
 	hostPattern := viper.GetString("host-pattern")
-	storageKeyPrefix := viper.GetString("key-prefix")
-	maxDeploymentSize := viper.GetInt("deployment-size")
+	storageKeyPrefix := viper.GetString("storage-key-prefix")
+	maxDeploymentSize := viper.GetInt("max-deployment-size")
+	tokenAuthority := viper.GetString("token-authority")
 	defaultConfig := controller.Config{
 		MaxDeploymentSize: int64(maxDeploymentSize),
 		StorageKeyPrefix:  storageKeyPrefix,
 		HostPattern:       config.NewHostPattern(hostPattern),
 		HostIDScheme:      config.HostIDSchemeDefault,
 		TokenSigningKey:   []byte("test"),
-		TokenAuthority:    "test",
+		TokenAuthority:    tokenAuthority,
 		ServerVersion:     "test",
 	}
 	ctrl := &controller.Controller{
